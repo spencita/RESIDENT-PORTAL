@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>IM Core Faculty Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:only light}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#FBFAF7;font-family:'Inter',sans-serif;color:#2A2A2A}
+
+/* ── TOPBAR ── */
+.topbar{background:#003A23;color:rgba(255,255,255,.6);text-align:center;font-size:10px;padding:4px;letter-spacing:.04em;text-transform:uppercase}
+.mh{background:#005030;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.mh-left{display:flex;align-items:center;gap:12px}
+.mh-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff}
+.mh-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.06em;text-transform:uppercase}
+.faculty-badge{background:#F47321;color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.mh-logout{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.mh-logout:hover{background:rgba(255,255,255,.25)}
+
+/* ── LOGIN ── */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:80vh;padding:24px}
+.login-card{background:#fff;border-radius:16px;border:1px solid #D8E2DC;box-shadow:0 8px 32px rgba(0,0,0,.1);padding:40px;max-width:400px;width:100%;text-align:center}
+.login-icon{font-size:48px;margin-bottom:16px}
+.login-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#003A23;margin-bottom:8px}
+.login-sub{font-size:13px;color:#6B7A70;margin-bottom:28px;line-height:1.6}
+.section-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.section-btn{padding:12px;border-radius:10px;border:2px solid #D8E2DC;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#003A23;font-family:'Inter',sans-serif;transition:.15s;text-align:center}
+.section-btn:hover{border-color:#005030;background:#f0f7f4}
+.section-btn.selected{border-color:#005030;background:#005030;color:#fff}
+.section-btn .sb-icon{font-size:20px;display:block;margin-bottom:4px}
+.pw-input{width:100%;padding:12px 16px;border-radius:10px;border:1.5px solid #D8E2DC;font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:12px}
+.pw-input:focus{border-color:#005030;box-shadow:0 0 0 3px rgba(0,80,48,.1)}
+.login-btn{width:100%;padding:13px;border-radius:10px;border:none;background:#005030;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.login-btn:hover{background:#003A23}
+.login-err{color:#c0392b;font-size:12px;margin-top:8px;display:none}
+
+/* ── MAIN PORTAL ── */
+#portalPage{display:none}
+.portal-nav{background:#fff;border-bottom:1px solid #D8E2DC;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.pnav-btn{padding:14px 20px;font-size:12px;font-weight:600;color:#6B7A70;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;font-family:'Inter',sans-serif;white-space:nowrap;transition:.15s}
+.pnav-btn:hover{color:#005030}
+.pnav-btn.active{color:#005030;border-bottom-color:#005030}
+.portal-content{padding:28px;max-width:1400px;margin:0 auto}
+
+/* ── SECTION TITLES ── */
+.sec-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#003A23;margin-bottom:6px}
+.sec-sub{font-size:13px;color:#6B7A70;margin-bottom:24px;line-height:1.6}
+.pane{display:none}.pane.active{display:block}
+
+/* ── CARDS ── */
+.edit-card{background:#fff;border-radius:12px;border:1px solid #D8E2DC;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.edit-card-title{font-size:13px;font-weight:700;color:#003A23;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ── CONTROLS ── */
+.ctrl-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+select.fsel{padding:9px 12px;border-radius:8px;border:1.5px solid #D8E2DC;font-size:13px;font-family:'Inter',sans-serif;outline:none;background:#fff;color:#2A2A2A;cursor:pointer}
+select.fsel:focus{border-color:#005030}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:32px;padding:8px;background:#FBFAF7;border-radius:8px;border:1px solid #D8E2DC}
+.res-tag{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #D8E2DC;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500;color:#003A23}
+.res-tag .rm{background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;font-weight:700}
+.add-btn{padding:8px 16px;border-radius:8px;border:none;background:#005030;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.add-btn:hover{background:#003A23}
+.save-btn{padding:10px 24px;border-radius:8px;border:none;background:#F47321;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.save-btn:hover{background:#d85f12}
+.cancel-btn{padding:10px 18px;border-radius:8px;border:1px solid #D8E2DC;background:#fff;color:#6B7A70;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* ── PERIOD CURRENT ── */
+.period-display{background:linear-gradient(135deg,#005030,#003A23);border-radius:14px;padding:20px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pd-left .pd-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:4px}
+.pd-left .pd-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:700}
+.pd-left .pd-dates{font-size:12px;opacity:.7;margin-top:2px}
+
+/* ── PASSWORD CHANGE ── */
+.pw-change-form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end}
+@media(max-width:700px){.pw-change-form{grid-template-columns:1fr}}
+.pw-field label{display:block;font-size:11px;font-weight:600;color:#6B7A70;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.pw-field input{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #D8E2DC;font-size:13px;font-family:'Inter',sans-serif;outline:none}
+.pw-field input:focus{border-color:#005030}
+
+/* ── FAQ EDITOR ── */
+.faq-item-edit{background:#FBFAF7;border:1px solid #D8E2DC;border-radius:10px;padding:14px;margin-bottom:10px}
+.faq-q-input{width:100%;padding:8px 12px;border-radius:7px;border:1px solid #D8E2DC;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;margin-bottom:8px;outline:none}
+.faq-q-input:focus{border-color:#005030}
+.faq-a-input{width:100%;padding:8px 12px;border-radius:7px;border:1px solid #D8E2DC;font-size:12px;font-family:'Inter',sans-serif;min-height:60px;resize:vertical;outline:none}
+.faq-a-input:focus{border-color:#005030}
+.del-btn{padding:5px 10px;border-radius:6px;border:none;background:#fee;color:#c0392b;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* ── TOAST ── */
+#fToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#003A23;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+
+/* ── XC TABLE ── */
+.xc-edit-table{width:100%;border-collapse:collapse;font-size:12px}
+.xc-edit-table th{background:#005030;color:#fff;padding:8px 10px;text-align:left;font-size:11px}
+.xc-edit-table td{padding:7px 10px;border-bottom:1px solid #D8E2DC}
+.xc-edit-table tr:hover td{background:#f5faf5}
+.xc-sel{width:100%;padding:5px 8px;border:1px solid #D8E2DC;border-radius:6px;font-size:11px;font-family:'Inter',sans-serif;background:#fff}
+
+/* ── COUNTS TABLE ── */
+.cnt-table{width:100%;border-collapse:collapse;font-size:12px}
+.cnt-table th{background:#005030;color:#fff;padding:8px 12px;text-align:center;font-size:11px;position:sticky;top:40px}
+.cnt-table td{padding:7px 12px;border-bottom:1px solid #D8E2DC;text-align:center}
+.cnt-table .name-cell{text-align:left;font-weight:500}
+.cnt-total{font-weight:700;color:#003A23}
+.grp-banner{background:#003A23;color:#fff;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:7px 12px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){.portal-content{padding:16px}.section-btns{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">IM Core Faculty Portal — Authorized Access Only</div>
+<div class="mh">
+  <div class="mh-left">
+    <div>
+      <div class="mh-logo">IM Core</div>
+      <div class="mh-sub">Faculty Administration</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="faculty-badge" id="sectionBadge">Not logged in</span>
+    <button class="mh-logout" id="logoutBtn" onclick="logout()" style="display:none">Sign Out</button>
+  </div>
+</div>
+
+<!-- ════ LOGIN PAGE ════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Faculty Access</div>
+    <div class="login-sub">Select the section you want to edit, then enter your password.</div>
+    <div class="section-btns">
+      <button class="section-btn" onclick="selectSection('pull')" id="sbtn-pull">
+        <span class="sb-icon">📋</span>Pull List
+      </button>
+      <button class="section-btn" onclick="selectSection('xc')" id="sbtn-xc">
+        <span class="sb-icon">🏥</span>Cross-Coverage
+      </button>
+      <button class="section-btn" onclick="selectSection('faq')" id="sbtn-faq">
+        <span class="sb-icon">❓</span>FAQ
+      </button>
+      <button class="section-btn" onclick="selectSection('admin')" id="sbtn-admin">
+        <span class="sb-icon">⚙️</span>Admin
+      </button>
+    </div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Enter password..." onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ════ PORTAL PAGE ════ -->
+<div id="portalPage">
+  <nav class="portal-nav" id="portalNav"></nav>
+  <div class="portal-content">
+
+    <!-- PULL LIST PANE -->
+    <div class="pane" id="pane-pull">
+      <div class="sec-title">Pull List Editor</div>
+      <div class="sec-sub">Add or remove residents from any pull slot. Changes update counts automatically. Save to export updated files.</div>
+      <div class="edit-card">
+        <div class="ctrl-row">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#6B7A70;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Period</label>
+            <select class="fsel" id="pull-period" onchange="loadPullSlots()"><option value="1A">1A</option><option value="1B">1B</option><option value="2A">2A</option><option value="2B">2B</option><option value="3A">3A</option><option value="3B">3B</option><option value="4A">4A</option><option value="4B">4B</option><option value="5A">5A</option><option value="5B">5B</option><option value="6A">6A</option><option value="6B">6B</option><option value="7A">7A</option><option value="7B">7B</option><option value="8A">8A</option><option value="8B">8B</option><option value="9A">9A</option><option value="9B">9B</option><option value="10A">10A</option><option value="10B">10B</option><option value="11A">11A</option><option value="11B">11B</option><option value="12A">12A</option><option value="12B">12B</option><option value="13A">13A</option><option value="13B">13B</option></select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#6B7A70;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Week</label>
+            <select class="fsel" id="pull-week" onchange="loadPullSlots()">
+              <option value="1">Week 1</option>
+              <option value="2">Week 2</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="pull-slots-container"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+        <button class="save-btn" onclick="savePull()">💾 Save Pull List Changes</button>
+        <span id="pull-saved-msg" style="font-size:12px;color:green;display:none">✅ Saved!</span>
+      </div>
+    </div>
+
+    <!-- XC PANE -->
+    <div class="pane" id="pane-xc">
+      <div class="sec-title">Cross-Coverage Editor</div>
+      <div class="sec-sub">Reassign residents to different XC teams. Changes reflect immediately in the resident portal counts.</div>
+      <div class="edit-card">
+        <div class="ctrl-row">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#6B7A70;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Period</label>
+            <select class="fsel" id="xc-period" onchange="loadXCTable()"><option value="1A">1A</option><option value="1B">1B</option><option value="2A">2A</option><option value="2B">2B</option><option value="3A">3A</option><option value="3B">3B</option><option value="4A">4A</option><option value="4B">4B</option><option value="5A">5A</option><option value="5B">5B</option><option value="6A">6A</option><option value="6B">6B</option><option value="7A">7A</option><option value="7B">7B</option><option value="8A">8A</option><option value="8B">8B</option><option value="9A">9A</option><option value="9B">9B</option><option value="10A">10A</option><option value="10B">10B</option><option value="11A">11A</option><option value="11B">11B</option><option value="12A">12A</option><option value="12B">12B</option><option value="13A">13A</option><option value="13B">13B</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="edit-card">
+        <div class="edit-card-title">XC Assignments — <span id="xc-period-label"></span></div>
+        <div id="xc-table-container"></div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+        <button class="save-btn" onclick="saveXC()">💾 Save XC Changes</button>
+        <span id="xc-saved-msg" style="font-size:12px;color:green;display:none">✅ Saved!</span>
+      </div>
+    </div>
+
+    <!-- FAQ PANE -->
+    <div class="pane" id="pane-faq">
+      <div class="sec-title">FAQ Editor</div>
+      <div class="sec-sub">Add, edit, or remove FAQ questions. Changes are saved locally and can be exported to update the portal.</div>
+      <div id="faq-items"></div>
+      <button class="add-btn" style="margin-top:8px" onclick="addFAQ()">+ Add Question</button>
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+        <button class="save-btn" onclick="saveFAQ()">💾 Save FAQ Changes</button>
+        <span id="faq-saved-msg" style="font-size:12px;color:green;display:none">✅ Saved!</span>
+      </div>
+    </div>
+
+    <!-- ADMIN PANE -->
+    <div class="pane" id="pane-admin">
+      <div class="sec-title">Admin Settings</div>
+      <div class="sec-sub">Manage current period, passwords, and portal settings.</div>
+
+      <!-- CURRENT PERIOD -->
+      <div class="edit-card">
+        <div class="edit-card-title">📅 Current Academic Period</div>
+        <div class="period-display">
+          <div class="pd-left">
+            <div class="pd-label">Active Period</div>
+            <div class="pd-val" id="admin-cur-period">—</div>
+            <div class="pd-dates" id="admin-cur-dates">—</div>
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <select class="fsel" id="admin-period-sel"><option value="1A">1A</option><option value="1B">1B</option><option value="2A">2A</option><option value="2B">2B</option><option value="3A">3A</option><option value="3B">3B</option><option value="4A">4A</option><option value="4B">4B</option><option value="5A">5A</option><option value="5B">5B</option><option value="6A">6A</option><option value="6B">6B</option><option value="7A">7A</option><option value="7B">7B</option><option value="8A">8A</option><option value="8B">8B</option><option value="9A">9A</option><option value="9B">9B</option><option value="10A">10A</option><option value="10B">10B</option><option value="11A">11A</option><option value="11B">11B</option><option value="12A">12A</option><option value="12B">12B</option><option value="13A">13A</option><option value="13B">13B</option></select>
+          <button class="save-btn" onclick="setActivePeriod()">Set as Active Period</button>
+        </div>
+        <p style="font-size:11px;color:#6B7A70;margin-top:8px">The portal normally auto-detects the period from today's date. Use this to manually override it.</p>
+      </div>
+
+      <!-- CHANGE PASSWORDS -->
+      <div class="edit-card">
+        <div class="edit-card-title">🔑 Change Passwords</div>
+        <div style="display:grid;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#003A23;margin-bottom:8px">Pull List Password</div>
+            <div class="pw-change-form">
+              <div class="pw-field"><label>Current</label><input type="password" id="pw-pull-cur" placeholder="Current password"></div>
+              <div class="pw-field"><label>New Password</label><input type="password" id="pw-pull-new" placeholder="New password"></div>
+              <div class="pw-field"><label>Confirm</label><input type="password" id="pw-pull-confirm" placeholder="Confirm new password"></div>
+            </div>
+            <button class="save-btn" style="margin-top:10px" onclick="changePassword('pull')">Update Pull List Password</button>
+            <span id="pw-pull-msg" style="font-size:11px;margin-left:10px;display:none"></span>
+          </div>
+          <hr style="border:none;border-top:1px solid #D8E2DC">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#003A23;margin-bottom:8px">Cross-Coverage Password</div>
+            <div class="pw-change-form">
+              <div class="pw-field"><label>Current</label><input type="password" id="pw-xc-cur" placeholder="Current password"></div>
+              <div class="pw-field"><label>New Password</label><input type="password" id="pw-xc-new" placeholder="New password"></div>
+              <div class="pw-field"><label>Confirm</label><input type="password" id="pw-xc-confirm" placeholder="Confirm new password"></div>
+            </div>
+            <button class="save-btn" style="margin-top:10px" onclick="changePassword('xc')">Update XC Password</button>
+            <span id="pw-xc-msg" style="font-size:11px;margin-left:10px;display:none"></span>
+          </div>
+          <hr style="border:none;border-top:1px solid #D8E2DC">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#003A23;margin-bottom:8px">Admin Password</div>
+            <div class="pw-change-form">
+              <div class="pw-field"><label>Current</label><input type="password" id="pw-admin-cur" placeholder="Current password"></div>
+              <div class="pw-field"><label>New Password</label><input type="password" id="pw-admin-new" placeholder="New password"></div>
+              <div class="pw-field"><label>Confirm</label><input type="password" id="pw-admin-confirm" placeholder="Confirm new password"></div>
+            </div>
+            <button class="save-btn" style="margin-top:10px" onclick="changePassword('admin')">Update Admin Password</button>
+            <span id="pw-admin-msg" style="font-size:11px;margin-left:10px;display:none"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNTS PANE -->
+    <div class="pane" id="pane-counts">
+      <div class="sec-title">Coverage Count Reference</div>
+      <div class="sec-sub">Read-only view. Counts are calculated automatically from pull list and XC assignments. JJ excluded.</div>
+      <div class="edit-card" style="overflow-x:auto">
+        <table class="cnt-table" id="counts-table"></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div id="fToast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// PORTAL DATA
+// ═══════════════════════════════════════
+var PORTAL_DATA = {"periods":["1A","1B","2A","2B","3A","3B","4A","4B","5A","5B","6A","6B","7A","7B","8A","8B","9A","9B","10A","10B","11A","11B","12A","12B","13A","13B"],"residents":["Abdullaah IdrisAgbabiaka","Adriana Bagos-Estevez","Alekhya Mitta","Alexander Dobek","Alfonso Martinez de Majo","Allison Ong","Alvaro Rolim Guimaraes","Amani Algubari","Andrea Rocha Haro","Ariadna Robledo Bandala","Ashanti Roberts","Ashley Barrios Ruiz","Ayush Mohan","Azaria Lewis","Aziz Akrama","Bharath Ram","Bobby Wassel","Brad Parks Melville","Brandon Apagüeño","Brogan Brown","Cameron Ayala","Camila Sarcone","Camilo Avendano","Cathy Zheng","Dalian Letren","Daniel Del Toro Pedrosa","Daniel Schwartzbaum","David Guardamino Ojeda","Dayana Hano","Didier Vielot","Dominic Jarrett","Dorsa Majdpour","Efrain Castillo","Elijah LaSota","Emmanuel Bugarin Estrada","Eric Billinson","Fatema Jafferji","Fawaz Naeem","Frantzia Jeanty","Gabriela Flores Monar","Gerson Santiago Gonzalez","Giuliana Arevalo","Gretel Paez","Guilherme De Alencar Salazar Primo","Hamid Bangura","Israel Rodriguez","Jelani Regan","Jodi-Ann Fletcher","Jonathan Kluger","Jose Redondo","Katiana Hebbert","Kurt Statz-Geary","Laura Brizuela Grabosky","Leonardo Sosa Cotrina","Luis Gonzalez Isoba","Mailen Fernandez Gonzalez","Maria (Cristina) Arias Cortez","Maria Osorio","Marissa Gobin","Mark (Kasama) Manothummetha","Matthew Ryan","Maya McCoy","Meenakkshy Manoharan","Michaela Crawford","Mikayla Bowen","Monica Devaraju","Nedeke Ntekim","Nedi Ferekides","Nicolas Duque","Nicole Hitchcock","Nina Fanaropoulou","Nitin Arora","Noora Khiraoui","Osvaldo Nunez","Pedro Diaz","Ricardo Villela Mendez","Rithwik Terala","Samrah Siddiqui","Santiago Sucre","Sarah Dempsey Prioleau","Sarah Dozil","Seim Michael","Sergio AbantoPerez","Seth Lisle","Shebin George","Shengzhou Wen","Tanawin Nopsopon","Tessa Lavorgna","Tyler D'Ovidio","Valentin Camilion","Valerie Vilarino","Wahid Mohabir","William Cooley"],"pull":{"1A":{"1":{"jj":["Maria Osorio"],"wd":["Gretel Paez"],"gap_wd":["Sarah Dozil","Dayana Hano","Osvaldo Nunez"],"mp_wd":["Jonathan Kluger"],"we":["Ricardo Villela Mendez","Ariadna Robledo Bandala","Nitin Arora","Santiago Sucre"],"gap_we":[],"flex_we":["Andrea Rocha Haro"],"mp_we":["Jonathan Kluger"],"conf_cov":[]},"2":{"jj":["Efrain Castillo"],"wd":["Ayush Mohan","Jose Redondo","Aziz Akrama","Valentin Camilion"],"gap_wd":[],"mp_wd":["Daniel Schwartzbaum"],"we":["Sarah Dozil","Pedro Diaz","David Guardamino Ojeda"],"gap_we":[],"flex_we":["Cameron Ayala","Sergio AbantoPerez"],"mp_we":["Daniel Schwartzbaum"],"conf_cov":[]}},"1B":{"1":{"jj":["Emmanuel Bugarin Estrada"],"wd":["Matthew Ryan","Giuliana Arevalo","Osvaldo Nunez","Sergio AbantoPerez"],"gap_wd":[],"mp_wd":["Elijah LaSota"],"we":["Gretel Paez","Ricardo Villela Mendez","Samrah Siddiqui","Efrain Castillo","Daniel Del Toro Pedrosa","Leonardo Sosa Cotrina"],"gap_we":[],"flex_we":[],"mp_we":["Elijah LaSota"],"conf_cov":[]},"2":{"jj":["Ashanti Roberts"],"wd":["Maria (Cristina) Arias Cortez","Pedro Diaz","Dalian Letren","Abdullaah IdrisAgbabiaka"],"gap_wd":[],"mp_wd":[],"we":["Guilherme De Alencar Salazar Primo","Brad Parks Melville","Monica Devaraju","Kurt Statz-Geary","Tessa Lavorgna"],"gap_we":[],"flex_we":[],"mp_we":[],"conf_cov":[]}},"2A":{"1":{"jj":["Ricardo Villela Mendez"],"wd":["Tyler D'Ovidio","Guilherme De Alencar Salazar Primo","Sarah Dozil"],"gap_wd":["Mailen Fernandez Gonzalez"],"mp_wd":[],"we":["Jelani Regan","Monica Devaraju","Bharath Ram","Alekhya Mitta"],"gap_we":["Maria (Cristina) Arias Cortez"],"flex_we":[],"mp_we":[],"conf_cov":[]},"2":{"jj":["Noora Khiraoui"],"wd":["Brandon Apagüeño","Adriana Bagos-Estevez","Monica Devaraju"],"gap_wd":[],"mp_wd":["Mikayla Bowen"],"we":["Dayana Hano","Laura Brizuela Grabosky"],"gap_we":["Fawaz Naeem","Meenakkshy Manoharan"],"flex_we":["Cathy Zheng","Tanawin Nopsopon"],"mp_we":["Mikayla Bowen"],"conf_cov":[]}},"2B":{"1":{"jj":["Aziz Akrama"],"wd":["Jelani Regan","Emmanuel Bugarin Estrada","David Guardamino Ojeda","Dorsa Majdpour"],"gap_wd":["Tessa Lavorgna"],"mp_wd":[],"we":["Fatema Jafferji","Brandon Apagüeño","Bharath Ram"],"gap_we":["Emmanuel Bugarin Estrada","Laura Brizuela Grabosky"],"flex_we":["Daniel Del Toro Pedrosa","Abdullaah IdrisAgbabiaka"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Ayush Mohan"],"wd":["Sergio AbantoPerez","Nitin Arora","Pedro Diaz"],"gap_wd":["Fawaz Naeem"],"mp_wd":["Seim Michael","Sarah Dempsey Prioleau"],"we":["Dorsa Majdpour","Seth Lisle","Shengzhou Wen"],"gap_we":["Eric Billinson"],"flex_we":["Bharath Ram"],"mp_we":["Seim Michael","Sarah Dempsey Prioleau"],"conf_cov":[]}},"3A":{"1":{"jj":["Valentin Camilion"],"wd":["Ashanti Roberts","Luis Gonzalez Isoba","Seth Lisle"],"gap_wd":["Noora Khiraoui"],"mp_wd":[],"we":["Brad Parks Melville","Mark (Kasama) Manothummetha","Amani Algubari","Israel Rodriguez","Matthew Ryan"],"gap_we":[],"flex_we":[],"mp_we":[],"conf_cov":[]},"2":{"jj":["Tyler D'Ovidio"],"wd":["Andrea Rocha Haro","Brad Parks Melville","Sarah Dozil","Gerson Santiago Gonzalez"],"gap_wd":["Marissa Gobin"],"mp_wd":[],"we":["Nicolas Duque","Jodi-Ann Fletcher","Camilo Avendano"],"gap_we":[],"flex_we":["Eric Billinson","Maria (Cristina) Arias Cortez"],"mp_we":[],"conf_cov":[]}},"3B":{"1":{"jj":["Camilo Avendano"],"wd":["Osvaldo Nunez","Mailen Fernandez Gonzalez"],"gap_wd":["Michaela Crawford","Nicolas Duque"],"mp_wd":["Elijah LaSota"],"we":["Emmanuel Bugarin Estrada","Marissa Gobin","Gerson Santiago Gonzalez","Wahid Mohabir","Didier Vielot"],"gap_we":[],"flex_we":[],"mp_we":["Elijah LaSota"],"conf_cov":[]},"2":{"jj":["Santiago Sucre"],"wd":["Katiana Hebbert","Shengzhou Wen","Alfonso Martinez de Majo","Maria Osorio","Wahid Mohabir","Marissa Gobin"],"gap_wd":[],"mp_wd":[],"we":["Dalian Letren","Laura Brizuela Grabosky","Michaela Crawford"],"gap_we":["Rithwik Terala"],"flex_we":["Jodi-Ann Fletcher"],"mp_we":[],"conf_cov":[]}},"4A":{"1":{"jj":["Sarah Dozil"],"wd":[],"gap_wd":["Gretel Paez","Valerie Vilarino","Nitin Arora"],"mp_wd":["Allison Ong"],"we":["Ashanti Roberts","Alexander Dobek","Jose Redondo","Ayush Mohan"],"gap_we":["Gabriela Flores Monar"],"flex_we":[],"mp_we":["Allison Ong"],"conf_cov":[]},"2":{"jj":["Monica Devaraju"],"wd":[],"gap_wd":["Ariadna Robledo Bandala"],"mp_wd":["Nicole Hitchcock","Maya McCoy","Sarah Dempsey Prioleau"],"we":["Aziz Akrama","Sergio AbantoPerez","Jodi-Ann Fletcher"],"gap_we":["Camila Sarcone"],"flex_we":["Ashanti Roberts"],"mp_we":["Nicole Hitchcock","Maya McCoy","Sarah Dempsey Prioleau"],"conf_cov":[]}},"4B":{"1":{"jj":["Tessa Lavorgna"],"wd":["Ariadna Robledo Bandala","Israel Rodriguez"],"gap_wd":["Gabriela Flores Monar","Tanawin Nopsopon"],"mp_wd":["Bobby Wassel"],"we":["Valentin Camilion","Noora Khiraoui","Samrah Siddiqui","Nina Fanaropoulou"],"gap_we":[],"flex_we":["Matthew Ryan"],"mp_we":["Bobby Wassel"],"conf_cov":["Monica Devaraju","Guilherme De Alencar Salazar Primo","Jodi-Ann Fletcher","Ayush Mohan"]},"2":{"jj":["Mark (Kasama) Manothummetha"],"wd":["Guilherme De Alencar Salazar Primo","Jodi-Ann Fletcher","Matthew Ryan","Gabriela Flores Monar"],"gap_wd":[],"mp_wd":[],"we":["Nedi Ferekides","Katiana Hebbert","Ariadna Robledo Bandala"],"gap_we":["Pedro Diaz"],"flex_we":["Ayush Mohan"],"mp_we":[],"conf_cov":["Sergio AbantoPerez","Mailen Fernandez Gonzalez","Dominic Jarrett","Nina Fanaropoulou","Tanawin Nopsopon"]}},"5A":{"1":{"jj":["Mailen Fernandez Gonzalez"],"wd":["Gerson Santiago Gonzalez","Rithwik Terala","Fawaz Naeem","Marissa Gobin"],"gap_wd":[],"mp_wd":[],"we":["Cameron Ayala","Dominic Jarrett","Nina Fanaropoulou","Camila Sarcone"],"gap_we":[],"flex_we":["Wahid Mohabir"],"mp_we":[],"conf_cov":["Didier Vielot","Pedro Diaz","Ashley Barrios Ruiz","Valerie Vilarino","Laura Brizuela Grabosky","Cathy Zheng","Sarah Dozil","David Guardamino Ojeda"]},"2":{"jj":["Seth Lisle"],"wd":["Mark (Kasama) Manothummetha","Laura Brizuela Grabosky","Cameron Ayala","Camila Sarcone"],"gap_wd":[],"mp_wd":[],"we":["Nedi Ferekides","Fawaz Naeem","Luis Gonzalez Isoba"],"gap_we":[],"flex_we":["Marissa Gobin","Ariadna Robledo Bandala"],"mp_we":[],"conf_cov":[]}},"5B":{"1":{"jj":["Wahid Mohabir"],"wd":["Dominic Jarrett","Alfonso Martinez de Majo","Kurt Statz-Geary"],"gap_wd":["Giuliana Arevalo"],"mp_wd":[],"we":["Sarah Dozil","Katiana Hebbert"],"gap_we":["Valentin Camilion"],"flex_we":["Brogan Brown","Gabriela Flores Monar","Tyler D'Ovidio"],"mp_we":[],"conf_cov":["Tessa Lavorgna","Gretel Paez","Eric Billinson","Leonardo Sosa Cotrina","Samrah Siddiqui"]},"2":{"jj":["Maria Osorio"],"wd":["Aziz Akrama","Valentin Camilion","Kurt Statz-Geary"],"gap_wd":["Dominic Jarrett"],"mp_wd":[],"we":["Andrea Rocha Haro","Guilherme De Alencar Salazar Primo","Tyler D'Ovidio"],"gap_we":["Fawaz Naeem"],"flex_we":["Alvaro Rolim Guimaraes"],"mp_we":[],"conf_cov":[]}},"6A":{"1":{"jj":["Ariadna Robledo Bandala"],"wd":["Shebin George","Didier Vielot","Gretel Paez"],"gap_wd":["Emmanuel Bugarin Estrada"],"mp_wd":["Maya McCoy"],"we":["Brogan Brown","Matthew Ryan"],"gap_we":["Wahid Mohabir"],"flex_we":["Marissa Gobin","Nicolas Duque"],"mp_we":["Maya McCoy"],"conf_cov":[]},"2":{"jj":["Samrah Siddiqui"],"wd":["Amani Algubari","Adriana Bagos-Estevez","Pedro Diaz","Ricardo Villela Mendez","Meenakkshy Manoharan"],"gap_wd":[],"mp_wd":[],"we":["Mark (Kasama) Manothummetha","Israel Rodriguez","Dayana Hano"],"gap_we":["Gerson Santiago Gonzalez"],"flex_we":["Brad Parks Melville","Shengzhou Wen"],"mp_we":[],"conf_cov":[]}},"6B":{"1":{"jj":["Jose Redondo"],"wd":["Alexander Dobek","Giuliana Arevalo","Samrah Siddiqui","Tyler D'Ovidio","Abdullaah IdrisAgbabiaka"],"gap_wd":[],"mp_wd":[],"we":["Cathy Zheng","Dorsa Majdpour","Brandon Apagüeño"],"gap_we":["Didier Vielot"],"flex_we":["Dayana Hano","Meenakkshy Manoharan"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Nedi Ferekides"],"wd":["Dalian Letren","Seth Lisle","Leonardo Sosa Cotrina"],"gap_wd":["Luis Gonzalez Isoba"],"mp_wd":["Hamid Bangura"],"we":["Mailen Fernandez Gonzalez","Bharath Ram","Santiago Sucre"],"gap_we":["Dalian Letren"],"flex_we":["Adriana Bagos-Estevez","Maria Osorio"],"mp_we":["Hamid Bangura"],"conf_cov":[]}},"7A":{"1":{"jj":["Valerie Vilarino"],"wd":["Michaela Crawford","Camilo Avendano"],"gap_wd":["Brogan Brown"],"mp_wd":["Frantzia Jeanty","William Cooley"],"we":["Osvaldo Nunez","Maria (Cristina) Arias Cortez","Shengzhou Wen","Andrea Rocha Haro"],"gap_we":["Brad Parks Melville"],"flex_we":[],"mp_we":["Frantzia Jeanty","William Cooley"],"conf_cov":[]},"2":{"jj":["Kurt Statz-Geary"],"wd":["Tessa Lavorgna","Brad Parks Melville","Laura Brizuela Grabosky"],"gap_wd":["Adriana Bagos-Estevez","Ashanti Roberts","Shebin George"],"mp_wd":[],"we":["Gabriela Flores Monar","Shengzhou Wen"],"gap_we":["Mark (Kasama) Manothummetha"],"flex_we":["Alekhya Mitta","Nicolas Duque"],"mp_we":[],"conf_cov":[]}},"7B":{"1":{"jj":["Nitin Arora"],"wd":["Efrain Castillo","Dorsa Majdpour"],"gap_wd":["Ricardo Villela Mendez"],"mp_wd":["Azaria Lewis","Allison Ong"],"we":["Alfonso Martinez de Majo","Matthew Ryan","Adriana Bagos-Estevez"],"gap_we":["Ayush Mohan"],"flex_we":["Gerson Santiago Gonzalez","Shebin George"],"mp_we":["Azaria Lewis","Allison Ong"],"conf_cov":[]},"2":{"jj":["Rithwik Terala"],"wd":["Alexander Dobek","Brogan Brown","Eric Billinson","Tanawin Nopsopon"],"gap_wd":[],"mp_wd":[],"we":["Tessa Lavorgna","Adriana Bagos-Estevez","Marissa Gobin"],"gap_we":["Alfonso Martinez de Majo","Mark (Kasama) Manothummetha"],"flex_we":["Shengzhou Wen"],"mp_we":[],"conf_cov":[]}},"8A":{"1":{"jj":["David Guardamino Ojeda"],"wd":["Nedi Ferekides","Daniel Del Toro Pedrosa","Luis Gonzalez Isoba"],"gap_wd":[],"mp_wd":["Seim Michael","Daniel Schwartzbaum"],"we":["Abdullaah IdrisAgbabiaka"],"gap_we":["Sergio AbantoPerez"],"flex_we":["Dominic Jarrett","Amani Algubari","Ashanti Roberts"],"mp_we":["Seim Michael","Daniel Schwartzbaum"],"conf_cov":[]},"2":{"jj":["Cathy Zheng"],"wd":["Ariadna Robledo Bandala","Noora Khiraoui","Brandon Apagüeño","Maria (Cristina) Arias Cortez"],"gap_wd":["Wahid Mohabir"],"mp_wd":[],"we":["Aziz Akrama","Alekhya Mitta","Alvaro Rolim Guimaraes"],"gap_we":[],"flex_we":["Mark (Kasama) Manothummetha","Fatema Jafferji","Fawaz Naeem"],"mp_we":[],"conf_cov":[]}},"8B":{"1":{"jj":["Mark (Kasama) Manothummetha"],"wd":["Ashanti Roberts","Rithwik Terala","Jelani Regan"],"gap_wd":["Alekhya Mitta","Dorsa Majdpour"],"mp_wd":[],"we":["Valentin Camilion","Mailen Fernandez Gonzalez"],"gap_we":["Tyler D'Ovidio"],"flex_we":["Kurt Statz-Geary","Monica Devaraju"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Andrea Rocha Haro"],"wd":["Fatema Jafferji","Alvaro Rolim Guimaraes","Tanawin Nopsopon"],"gap_wd":["Ashley Barrios Ruiz"],"mp_wd":[],"we":["Amani Algubari","Efrain Castillo"],"gap_we":[],"flex_we":["Jelani Regan","Alfonso Martinez de Majo","Luis Gonzalez Isoba"],"mp_we":[],"conf_cov":[]}},"9A":{"1":{"jj":["Tessa Lavorgna"],"wd":["Ayush Mohan","Fawaz Naeem","Jose Redondo","Leonardo Sosa Cotrina"],"gap_wd":[],"mp_wd":[],"we":["Seth Lisle","Camila Sarcone","Camilo Avendano"],"gap_we":[],"flex_we":["Ricardo Villela Mendez","Daniel Del Toro Pedrosa"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Brad Parks Melville"],"wd":["Camila Sarcone","Valerie Vilarino","Shebin George","Ricardo Villela Mendez"],"gap_wd":[],"mp_wd":[],"we":["Wahid Mohabir","Dalian Letren","Meenakkshy Manoharan"],"gap_we":["Brandon Apagüeño"],"flex_we":["Nitin Arora"],"mp_we":[],"conf_cov":[]}},"9B":{"1":{"jj":["Noora Khiraoui"],"wd":["Cathy Zheng","Nedi Ferekides","David Guardamino Ojeda","Gabriela Flores Monar"],"gap_wd":[],"mp_wd":[],"we":["Daniel Del Toro Pedrosa","Eric Billinson","Valerie Vilarino","Luis Gonzalez Isoba"],"gap_we":["Andrea Rocha Haro"],"flex_we":[],"mp_we":[],"conf_cov":[]},"2":{"jj":["Adriana Bagos-Estevez"],"wd":["Meenakkshy Manoharan","Alekhya Mitta"],"gap_wd":["Amani Algubari"],"mp_wd":["Jonathan Kluger"],"we":["Didier Vielot","Tyler D'Ovidio","Gerson Santiago Gonzalez","Pedro Diaz"],"gap_we":[],"flex_we":["Guilherme De Alencar Salazar Primo"],"mp_we":["Jonathan Kluger"],"conf_cov":[]}},"10A":{"1":{"jj":["Dalian Letren"],"wd":["Emmanuel Bugarin Estrada","Jodi-Ann Fletcher"],"gap_wd":["Nedi Ferekides"],"mp_wd":["Hamid Bangura"],"we":["Rithwik Terala","Jelani Regan","Alexander Dobek","Ashanti Roberts"],"gap_we":[],"flex_we":["Camila Sarcone"],"mp_we":["Hamid Bangura"],"conf_cov":[]},"2":{"jj":["Cathy Zheng"],"wd":["Mailen Fernandez Gonzalez","Maria Osorio"],"gap_wd":["Gretel Paez"],"mp_wd":["Mikayla Bowen"],"we":["Meenakkshy Manoharan","Kurt Statz-Geary","Dominic Jarrett"],"gap_we":[],"flex_we":["Brogan Brown","Jose Redondo"],"mp_we":["Mikayla Bowen"],"conf_cov":[]}},"10B":{"1":{"jj":["Leonardo Sosa Cotrina"],"wd":["Tessa Lavorgna","Monica Devaraju","Santiago Sucre"],"gap_wd":["Alvaro Rolim Guimaraes"],"mp_wd":[],"we":["Michaela Crawford","Cathy Zheng","Brogan Brown","Maria Osorio"],"gap_we":[],"flex_we":["Mailen Fernandez Gonzalez"],"mp_we":[],"conf_cov":["Alfonso Martinez de Majo","Andrea Rocha Haro","Noora Khiraoui","Valentin Camilion","Efrain Castillo","Shebin George","Shengzhou Wen","Dorsa Majdpour"]},"2":{"jj":["Pedro Diaz"],"wd":["Andrea Rocha Haro","Shengzhou Wen","Dominic Jarrett"],"gap_wd":["Jodi-Ann Fletcher"],"mp_wd":[],"we":["Noora Khiraoui"],"gap_we":["David Guardamino Ojeda"],"flex_we":["Dorsa Majdpour","Laura Brizuela Grabosky","Efrain Castillo"],"mp_we":[],"conf_cov":["Cameron Ayala","Adriana Bagos-Estevez","Michaela Crawford","Bharath Ram","Maria Osorio","Santiago Sucre","Israel Rodriguez","Alvaro Rolim Guimaraes"]}},"11A":{"1":{"jj":["Kurt Statz-Geary"],"wd":["Mark (Kasama) Manothummetha","Cameron Ayala","Ashley Barrios Ruiz"],"gap_wd":[],"mp_wd":["Frantzia Jeanty"],"we":["Sergio AbantoPerez","Jose Redondo"],"gap_we":["Fatema Jafferji"],"flex_we":["Brandon Apagüeño","Giuliana Arevalo"],"mp_we":["Frantzia Jeanty"],"conf_cov":["Osvaldo Nunez","Emmanuel Bugarin Estrada","Ricardo Villela Mendez","Nedi Ferekides","Katiana Hebbert","Wahid Mohabir","Dalian Letren","Camila Sarcone","Maria (Cristina) Arias Cortez"]},"2":{"jj":["Gretel Paez"],"wd":["Alvaro Rolim Guimaraes","Valerie Vilarino"],"gap_wd":["Jose Redondo","Nina Fanaropoulou"],"mp_wd":[],"we":["Abdullaah IdrisAgbabiaka","Eric Billinson","Giuliana Arevalo","Maria (Cristina) Arias Cortez"],"gap_we":[],"flex_we":["Nedi Ferekides"],"mp_we":[],"conf_cov":["Brandon Apagüeño","Luis Gonzalez Isoba","Ariadna Robledo Bandala","Gabriela Flores Monar"]}},"11B":{"1":{"jj":["David Guardamino Ojeda"],"wd":["Daniel Del Toro Pedrosa","Katiana Hebbert"],"gap_wd":["Guilherme De Alencar Salazar Primo","Dalian Letren"],"mp_wd":[],"we":["Osvaldo Nunez","Gretel Paez","Didier Vielot","Ashley Barrios Ruiz","Valerie Vilarino"],"gap_we":[],"flex_we":["Sarah Dozil"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Mailen Fernandez Gonzalez"],"wd":["Cathy Zheng","Bharath Ram"],"gap_wd":["Aziz Akrama"],"mp_wd":["Nedeke Ntekim"],"we":["Alvaro Rolim Guimaraes","Ashley Barrios Ruiz","Ayush Mohan"],"gap_we":["Katiana Hebbert","Jelani Regan"],"flex_we":[],"mp_we":["Nedeke Ntekim"],"conf_cov":[]}},"12A":{"1":{"jj":["Dominic Jarrett"],"wd":["Ashley Barrios Ruiz","Dayana Hano","Nicolas Duque","Nina Fanaropoulou"],"gap_wd":[],"mp_wd":[],"we":[],"gap_we":[],"flex_we":["Katiana Hebbert","Israel Rodriguez","Camilo Avendano","Aziz Akrama","Alexander Dobek"],"mp_we":[],"conf_cov":["Amani Algubari","Jelani Regan","Brad Parks Melville","Ashanti Roberts","Rithwik Terala","Seth Lisle","Tyler D'Ovidio"]},"2":{"jj":["Wahid Mohabir"],"wd":["Fatema Jafferji","Amani Algubari"],"gap_wd":["Nitin Arora"],"mp_wd":["Nicole Hitchcock"],"we":["Shebin George","Fawaz Naeem","Tanawin Nopsopon"],"gap_we":[],"flex_we":["Seth Lisle","Rithwik Terala"],"mp_we":["Nicole Hitchcock"],"conf_cov":["Abdullaah IdrisAgbabiaka","Nicolas Duque","Jose Redondo","Aziz Akrama","Alekhya Mitta","Dayana Hano","Alexander Dobek"]}},"12B":{"1":{"jj":["Rithwik Terala"],"wd":["Alekhya Mitta","Bharath Ram"],"gap_wd":["Leonardo Sosa Cotrina","Shengzhou Wen","Meenakkshy Manoharan"],"mp_wd":[],"we":["Cameron Ayala","Fatema Jafferji","Tanawin Nopsopon","Alfonso Martinez de Majo"],"gap_we":[],"flex_we":["Michaela Crawford","Noora Khiraoui"],"mp_we":[],"conf_cov":[]},"2":{"jj":["Dalian Letren"],"wd":["Nicolas Duque","Samrah Siddiqui"],"gap_wd":["Abdullaah IdrisAgbabiaka","Seth Lisle"],"mp_wd":["Azaria Lewis"],"we":["Giuliana Arevalo","Leonardo Sosa Cotrina","Fatema Jafferji"],"gap_we":[],"flex_we":["Valentin Camilion","Laura Brizuela Grabosky"],"mp_we":["Azaria Lewis"],"conf_cov":[]}},"13A":{"1":{"jj":["Leonardo Sosa Cotrina"],"wd":["Israel Rodriguez","Efrain Castillo","Santiago Sucre","Dayana Hano"],"gap_wd":[],"mp_wd":[],"we":["Emmanuel Bugarin Estrada","Gabriela Flores Monar"],"gap_we":["Cameron Ayala"],"flex_we":["Nina Fanaropoulou","Dalian Letren"],"mp_we":[],"conf_cov":["Giuliana Arevalo","Didier Vielot","Camilo Avendano","Daniel Del Toro Pedrosa","Brogan Brown"]},"2":{"jj":["Guilherme De Alencar Salazar Primo"],"wd":["Didier Vielot","Nina Fanaropoulou"],"gap_wd":["Israel Rodriguez"],"mp_wd":["William Cooley"],"we":["David Guardamino Ojeda","Nitin Arora"],"gap_we":["Santiago Sucre"],"flex_we":["Osvaldo Nunez","Emmanuel Bugarin Estrada"],"mp_we":["William Cooley"],"conf_cov":[]}},"13B":{"1":{"jj":["Pedro Diaz"],"wd":["Camilo Avendano","Brogan Brown"],"gap_wd":["Cathy Zheng"],"mp_wd":["Nedeke Ntekim"],"we":[],"gap_we":["Efrain Castillo","Maria Osorio"],"flex_we":["Gretel Paez","Santiago Sucre","Ashley Barrios Ruiz","Marissa Gobin"],"mp_we":["Nedeke Ntekim"],"conf_cov":[]},"2":{"jj":["Alexander Dobek"],"wd":["Eric Billinson","Nitin Arora","Michaela Crawford"],"gap_wd":["Kurt Statz-Geary"],"mp_wd":[],"we":["Shebin George","Maria Osorio"],"gap_we":["Camilo Avendano"],"flex_we":["Samrah Siddiqui","Valerie Vilarino"],"mp_we":[],"conf_cov":[]}}},"xc":{"1A":{"Alexander Dobek":"UMH T1","Meenakkshy Manoharan":"UMH T2","Shebin George":"VA T3","Ashanti Roberts":"JMH T3","Samrah Siddiqui":"VA T4","Gerson Santiago Gonzalez":"JMH T2","Ashley Barrios Ruiz":"VA T1","Amani Algubari":"VA T2","Nicolas Duque":"JMH T1","Maria (Cristina) Arias Cortez":"UMH T3"},"1B":{"Alexander Dobek":"UMH T1","Meenakkshy Manoharan":"UMH T2","Laura Brizuela Grabosky":"JMH T1","Mailen Fernandez Gonzalez":"VA T3","Luis Gonzalez Isoba":"JMH T2","Gabriela Flores Monar":"VA T1","Jodi-Ann Fletcher":"JMH T3","Fatema Jafferji":"VA T2","Nina Fanaropoulou":"UMH T3","Cameron Ayala":"VA T4"},"2A":{"Seim Michael":"JMH T1","Leonardo Sosa Cotrina":"UMH T2","Daniel Schwartzbaum":"VA T1","Maria Osorio":"UMH T3","Abdullaah IdrisAgbabiaka":"VA T3","Shengzhou Wen":"VA T4","Eric Billinson":"JMH T3","Daniel Del Toro Pedrosa":"VA T2","Sergio AbantoPerez":"UMH T1","Katiana Hebbert":"JMH T2"},"2B":{"Alfonso Martinez de Majo":"UMH T1","Mikayla Bowen":"VA T1","Guilherme De Alencar Salazar Primo":"UMH T2","Gretel Paez":"JMH T2","Dayana Hano":"JMH T1","Jose Redondo":"UMH T3","Brogan Brown":"JMH T3","Didier Vielot":"VA T2","Alvaro Rolim Guimaraes":"VA T3","Michaela Crawford":"VA T4"},"3A":{"Alfonso Martinez de Majo":"UMH T1","Sarah Dempsey Prioleau":"UMH T2","Shengzhou Wen":"VA T2","Gabriela Flores Monar":"VA T4","Elijah LaSota":"VA T1","Jonathan Kluger":"UMH T3","Daniel Del Toro Pedrosa":"JMH T3","Bharath Ram":"JMH T1","Katiana Hebbert":"VA T3","Giuliana Arevalo":"JMH T2"},"3B":{"Dorsa Majdpour":"UMH T1","Mikayla Bowen":"UMH T2","Eric Billinson":"JMH T1","Allison Ong":"JMH T3","Ashley Barrios Ruiz":"JMH T2","Brad Parks Melville":"UMH T3","Nina Fanaropoulou":"VA T1","Sergio AbantoPerez":"VA T2","Israel Rodriguez":"VA T3","Maria (Cristina) Arias Cortez":"VA T4"},"4A":{"Dorsa Majdpour":"UMH T1","Giuliana Arevalo":"VA T1","Ricardo Villela Mendez":"UMH T2","Camilo Avendano":"VA T3","Katiana Hebbert":"VA T2","Alfonso Martinez de Majo":"JMH T1","Andrea Rocha Haro":"UMH T3","Cameron Ayala":"JMH T2","Michaela Crawford":"JMH T3","Matthew Ryan":"VA T4"},"4B":{"Giuliana Arevalo":"VA T1","Alvaro Rolim Guimaraes":"JMH T1","Meenakkshy Manoharan":"JMH T2","Maria Osorio":"VA T2","Azaria Lewis":"VA T3","Fatema Jafferji":"VA T4","Santiago Sucre":"UMH T1","Cathy Zheng":"UMH T2","Fawaz Naeem":"UMH T3","Marissa Gobin":"JMH T3"},"5A":{"Alvaro Rolim Guimaraes":"JMH T1","Israel Rodriguez":"JMH T2","Emmanuel Bugarin Estrada":"UMH T1","Bobby Wassel":"UMH T2","Jose Redondo":"VA T4","Frantzia Jeanty":"UMH T3","Brogan Brown":"VA T1","Dalian Letren":"VA T2","Nitin Arora":"VA T3","Brandon Apagüeño":"JMH T3"},"5B":{"Israel Rodriguez":"JMH T2","Monica Devaraju":"UMH T1","Maya McCoy":"VA T1","Nedeke Ntekim":"UMH T2","Mark (Kasama) Manothummetha":"UMH T3","William Cooley":"VA T2","Cameron Ayala":"VA T3","Noora Khiraoui":"VA T4","Valerie Vilarino":"JMH T1","Tanawin Nopsopon":"JMH T3"},"6A":{"Monica Devaraju":"UMH T1","Seth Lisle":"JMH T2","Abdullaah IdrisAgbabiaka":"JMH T1","Hamid Bangura":"UMH T3","Pedro Diaz":"VA T1","Aziz Akrama":"JMH T3","Rithwik Terala":"UMH T2","Fawaz Naeem":"VA T2","Jodi-Ann Fletcher":"VA T3","Maria (Cristina) Arias Cortez":"VA T4"},"6B":{"Matthew Ryan":"JMH T1","Fatema Jafferji":"JMH T2","Nicole Hitchcock":"VA T1","Camila Sarcone":"UMH T1","Noora Khiraoui":"JMH T3","Efrain Castillo":"UMH T2","Gerson Santiago Gonzalez":"UMH T3","Michaela Crawford":"VA T2","Amani Algubari":"VA T3","Nicolas Duque":"VA T4"},"7A":{"Matthew Ryan":"JMH T1","Eric Billinson":"VA T1","Santiago Sucre":"VA T2","Giuliana Arevalo":"JMH T2","Daniel Del Toro Pedrosa":"VA T3","Luis Gonzalez Isoba":"UMH T1","Dorsa Majdpour":"JMH T3","Tanawin Nopsopon":"UMH T2","Marissa Gobin":"UMH T3","Jelani Regan":"VA T4"},"7B":{"Osvaldo Nunez":"UMH T1","Guilherme De Alencar Salazar Primo":"JMH T1","David Guardamino Ojeda":"UMH T2","Katiana Hebbert":"UMH T3","Valerie Vilarino":"VA T1","Brad Parks Melville":"JMH T2","Andrea Rocha Haro":"VA T2","Sergio AbantoPerez":"VA T3","Didier Vielot":"JMH T3","Alekhya Mitta":"VA T4"},"8A":{"Osvaldo Nunez":"UMH T1","Brogan Brown":"UMH T2","Rithwik Terala":"VA T2","Tanawin Nopsopon":"VA T3","Dorsa Majdpour":"VA T4","Kurt Statz-Geary":"UMH T3","Camilo Avendano":"JMH T1","Alfonso Martinez de Majo":"VA T1","Jelani Regan":"JMH T2","Nina Fanaropoulou":"JMH T3"},"8B":{"Cameron Ayala":"UMH T1","Michaela Crawford":"UMH T2","Adriana Bagos-Estevez":"VA T1","Nedi Ferekides":"JMH T1","Didier Vielot":"VA T2","Cathy Zheng":"VA T3","Dayana Hano":"UMH T3","Nitin Arora":"JMH T2","Bharath Ram":"JMH T3","Brandon Apagüeño":"VA T4"},"9A":{"Osvaldo Nunez":"JMH T1","Gerson Santiago Gonzalez":"VA T1","Sergio AbantoPerez":"JMH T2","Allison Ong":"VA T2","Jonathan Kluger":"VA T3","Ariadna Robledo Bandala":"UMH T1","Alekhya Mitta":"JMH T3","Amani Algubari":"UMH T2","Nicolas Duque":"VA T4","Jodi-Ann Fletcher":"UMH T3"},"9B":{"Osvaldo Nunez":"JMH T1","Bharath Ram":"VA T1","Fawaz Naeem":"VA T2","Elijah LaSota":"UMH T1","Gretel Paez":"VA T3","Brandon Apagüeño":"VA T4","Dalian Letren":"UMH T2","Ashley Barrios Ruiz":"UMH T3","Marissa Gobin":"JMH T2","Maria (Cristina) Arias Cortez":"JMH T3"},"10A":{"Bharath Ram":"VA T1","Luis Gonzalez Isoba":"VA T2","Seim Michael":"VA T3","Valentin Camilion":"UMH T1","Sarah Dempsey Prioleau":"VA T4","Daniel Schwartzbaum":"JMH T1","Alekhya Mitta":"UMH T3","Israel Rodriguez":"UMH T2","Shengzhou Wen":"JMH T2","Shebin George":"JMH T3"},"10B":{"Luis Gonzalez Isoba":"VA T2","Dayana Hano":"VA T1","Ayush Mohan":"UMH T1","Fatema Jafferji":"UMH T2","Abdullaah IdrisAgbabiaka":"VA T3","Camila Sarcone":"JMH T1","Brandon Apagüeño":"UMH T3","Ashley Barrios Ruiz":"JMH T2","Tanawin Nopsopon":"JMH T3","Marissa Gobin":"VA T4"},"11A":{"Dayana Hano":"VA T1","Adriana Bagos-Estevez":"JMH T2","Nedeke Ntekim":"VA T3","Pedro Diaz":"JMH T1","David Guardamino Ojeda":"VA T4","Tessa Lavorgna":"UMH T1","Dominic Jarrett":"UMH T2","Daniel Del Toro Pedrosa":"UMH T3","Jodi-Ann Fletcher":"VA T2","Jelani Regan":"JMH T3"},"11B":{"Laura Brizuela Grabosky":"UMH T1","William Cooley":"UMH T2","Tyler D'Ovidio":"UMH T3","Ashanti Roberts":"VA T1","Samrah Siddiqui":"JMH T1","Abdullaah IdrisAgbabiaka":"JMH T2","Camila Sarcone":"VA T2","Shebin George":"VA T3","Nicolas Duque":"JMH T3","Nina Fanaropoulou":"VA T4"},"12A":{"Laura Brizuela Grabosky":"UMH T1","Tessa Lavorgna":"VA T1","Mark (Kasama) Manothummetha":"VA T2","Azaria Lewis":"JMH T3","Leonardo Sosa Cotrina":"VA T3","Emmanuel Bugarin Estrada":"VA T4","Shengzhou Wen":"UMH T3","Gabriela Flores Monar":"JMH T1","Meenakkshy Manoharan":"JMH T2","Alvaro Rolim Guimaraes":"UMH T2"},"12B":{"Maya McCoy":"JMH T2","Nicole Hitchcock":"UMH T2","Camila Sarcone":"UMH T3","Mailen Fernandez Gonzalez":"JMH T1","Sarah Dozil":"UMH T1","Shebin George":"JMH T3","Efrain Castillo":"VA T1","Hamid Bangura":"VA T2","Jelani Regan":"VA T3","Brogan Brown":"VA T4"},"13A":{"Wahid Mohabir":"UMH T1","Laura Brizuela Grabosky":"VA T1","Bobby Wassel":"VA T2","Kurt Statz-Geary":"JMH T1","Ariadna Robledo Bandala":"VA T3","Ricardo Villela Mendez":"JMH T2","Frantzia Jeanty":"VA T4","Eric Billinson":"UMH T2","Matthew Ryan":"UMH T3","Amani Algubari":"JMH T3"},"13B":{"Wahid Mohabir":"UMH T1","Ayush Mohan":"JMH T1","Valentin Camilion":"VA T1","Sarah Dozil":"JMH T2","Tyler D'Ovidio":"JMH T3","Dominic Jarrett":"VA T2","Seth Lisle":"VA T3","Nedi Ferekides":"VA T4","Aziz Akrama":"UMH T2","Gerson Santiago Gonzalez":"UMH T3"}},"period_dates":{"1A":{"display":"July 1 – 12, 2026","start":"2026-07-01","end":"2026-07-12"},"1B":{"display":"July 13 – 26, 2026","start":"2026-07-13","end":"2026-07-26"},"2A":{"display":"July 27 – August 9, 2026","start":"2026-07-27","end":"2026-08-09"},"2B":{"display":"August 10 – 23, 2026","start":"2026-08-10","end":"2026-08-23"},"3A":{"display":"August 24 – September 6, 2026","start":"2026-08-24","end":"2026-09-06"},"3B":{"display":"September 7 – 20, 2026","start":"2026-09-07","end":"2026-09-20"},"4A":{"display":"September 21 – October 4, 2026","start":"2026-09-21","end":"2026-10-04"},"4B":{"display":"October 5 – 18, 2026","start":"2026-10-05","end":"2026-10-18"},"5A":{"display":"October 19 – November 1, 2026","start":"2026-10-19","end":"2026-11-01"},"5B":{"display":"November 2 – 15, 2026","start":"2026-11-02","end":"2026-11-15"},"6A":{"display":"November 16 – 29, 2026","start":"2026-11-16","end":"2026-11-29"},"6B":{"display":"November 30 – December 13, 2026","start":"2026-11-30","end":"2026-12-13"},"7A":{"display":"December 14 – 27, 2026","start":"2026-12-14","end":"2026-12-27"},"7B":{"display":"December 28, 2026 – January 10, 2027","start":"2026-12-28","end":"2027-01-10"},"8A":{"display":"January 11 – 24, 2027","start":"2027-01-11","end":"2027-01-24"},"8B":{"display":"January 25 – February 7, 2027","start":"2027-01-25","end":"2027-02-07"},"9A":{"display":"February 8 – 21, 2027","start":"2027-02-08","end":"2027-02-21"},"9B":{"display":"February 22 – March 7, 2027","start":"2027-02-22","end":"2027-03-07"},"10A":{"display":"March 8 – 21, 2027","start":"2027-03-08","end":"2027-03-21"},"10B":{"display":"March 22 – April 4, 2027","start":"2027-03-22","end":"2027-04-04"},"11A":{"display":"April 5 – 18, 2027","start":"2027-04-05","end":"2027-04-18"},"11B":{"display":"April 19 – May 2, 2027","start":"2027-04-19","end":"2027-05-02"},"12A":{"display":"May 3 – 16, 2027","start":"2027-05-03","end":"2027-05-16"},"12B":{"display":"May 17 – 30, 2027","start":"2027-05-17","end":"2027-05-30"},"13A":{"display":"May 31 – June 13, 2027","start":"2027-05-31","end":"2027-06-13"},"13B":{"display":"June 14 – 30, 2027","start":"2027-06-14","end":"2027-06-30"}},"conf_map":{"4B|1":"🔬 ACG","4B|2":"🫁 CHEST","5A|1":"🦠 IDWeek · 💧 ASN","5B|1":"❤️ AHA · 🫀 AASLD","10B|1":"🏥 SHM","10B|2":"💻 AIMW","11A|1":"❤️ ACC","11A|2":"🩺 ACP","12A|1":"🌐 SGIM","12A|2":"💉 AACE · 🫁 ATS","13A|1":"💉 ENDO · 🎗️ ASCO","13B|1":"😴 SLEEP"},"grp_map":{"Abdullaah IdrisAgbabiaka":"P2","Adriana Bagos-Estevez":"P3","Alekhya Mitta":"P2","Alexander Dobek":"P3","Alfonso Martinez de Majo":"P2","Allison Ong":"MP","Alvaro Rolim Guimaraes":"P2","Amani Algubari":"P2","Andrea Rocha Haro":"P3","Ariadna Robledo Bandala":"P3","Ashanti Roberts":"P3","Ashley Barrios Ruiz":"P2","Ayush Mohan":"P3","Azaria Lewis":"MP","Aziz Akrama":"P3","Bharath Ram":"P2","Bobby Wassel":"MP","Brad Parks Melville":"P3","Brandon Apagüeño":"P2","Brogan Brown":"P2","Cameron Ayala":"P2","Camila Sarcone":"P2","Camilo Avendano":"P3","Cathy Zheng":"P3","Dalian Letren":"P3","Daniel Del Toro Pedrosa":"P2","Daniel Schwartzbaum":"MP","David Guardamino Ojeda":"P3","Dayana Hano":"P2","Didier Vielot":"P2","Dominic Jarrett":"P3","Dorsa Majdpour":"P2","Efrain Castillo":"P3","Elijah LaSota":"MP","Emmanuel Bugarin Estrada":"P3","Eric Billinson":"P2","Fatema Jafferji":"P2","Fawaz Naeem":"P2","Frantzia Jeanty":"MP","Gabriela Flores Monar":"P2","Gerson Santiago Gonzalez":"P2","Giuliana Arevalo":"P2","Gretel Paez":"P3","Guilherme De Alencar Salazar Primo":"P3","Hamid Bangura":"MP","Israel Rodriguez":"P2","Jelani Regan":"P2","Jodi-Ann Fletcher":"P2","Jonathan Kluger":"MP","Jose Redondo":"P3","Katiana Hebbert":"P2","Kurt Statz-Geary":"P3","Laura Brizuela Grabosky":"P2","Leonardo Sosa Cotrina":"P3","Luis Gonzalez Isoba":"P2","Mailen Fernandez Gonzalez":"P3","Maria (Cristina) Arias Cortez":"P2","Maria Osorio":"P3","Marissa Gobin":"P2","Mark (Kasama) Manothummetha":"P3","Matthew Ryan":"P2","Maya McCoy":"MP","Meenakkshy Manoharan":"P2","Michaela Crawford":"P2","Mikayla Bowen":"MP","Monica Devaraju":"P3","Nedeke Ntekim":"MP","Nedi Ferekides":"P3","Nicolas Duque":"P2","Nicole Hitchcock":"MP","Nina Fanaropoulou":"P2","Nitin Arora":"P3","Noora Khiraoui":"P3","Osvaldo Nunez":"P2","Pedro Diaz":"P3","Ricardo Villela Mendez":"P3","Rithwik Terala":"P3","Samrah Siddiqui":"P3","Santiago Sucre":"P3","Sarah Dempsey Prioleau":"MP","Sarah Dozil":"P3","Seim Michael":"MP","Sergio AbantoPerez":"P2","Seth Lisle":"P3","Shebin George":"P2","Shengzhou Wen":"P2","Tanawin Nopsopon":"P2","Tessa Lavorgna":"P3","Tyler D'Ovidio":"P3","Valentin Camilion":"P3","Valerie Vilarino":"P3","Wahid Mohabir":"P3","William Cooley":"MP"},"mp_year_map":{"Allison Ong":"MP4","Azaria Lewis":"MP4","Bobby Wassel":"MP4","Daniel Schwartzbaum":"MP4","Elijah LaSota":"MP3","Frantzia Jeanty":"MP2","Hamid Bangura":"MP2","Jonathan Kluger":"MP2","Maya McCoy":"MP3","Mikayla Bowen":"MP3","Nedeke Ntekim":"MP2","Nicole Hitchcock":"MP3","Sarah Dempsey Prioleau":"MP4","Seim Michael":"MP2","William Cooley":"MP3"}};
+
+// Passwords stored in localStorage (hashed)
+function hashPW(pw){
+  var h=0;
+  for(var i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0;}
+  return String(h);
+}
+function getPW(section){
+  return localStorage.getItem('imcore_pw_'+section) || hashPW('1234');
+}
+function setPW(section,pw){
+  localStorage.setItem('imcore_pw_'+section,hashPW(pw));
+}
+
+// Pull list data (editable copy)
+var pullData = JSON.parse(JSON.stringify(PORTAL_DATA.pull));
+var xcData = JSON.parse(JSON.stringify(PORTAL_DATA.xc));
+
+// FAQ data
+var faqData = [
+  {q:'Why was the new pull list and cross-coverage system created?',a:'The new system reduces residents pulled on weekends coinciding with major conferences, encourages conference attendance, and streamlines coverage so PGY-2s and PGY-3s carry a more balanced load.'},
+  {q:'What counts toward my Total Coverage Count?',a:'Cross-Coverage, Pull List, Conference Coverage, Gap Coverage, and Balanced Coverage (BAL).'},
+  {q:'How does cross-coverage work — do I work every weekend?',a:'No. When assigned XC for a 2-week period, you work only 2 days total.'},
+  {q:'How does conference coverage work?',a:'Residents may receive up to two conferences per academic year, with two days of coverage for each. Submit at least 45 days in advance.'},
+  {q:'What is Balanced Coverage (BAL)?',a:'Balanced Coverage is used when conference coverage cannot be assigned because of a resident's existing schedule.'},
+  {q:'My schedule seems different from the general rule — why?',a:'Small variations may occur because of curriculum requirements, wellness considerations, coverage needs, or the existing master schedule.'},
+];
+
+// Active period override
+var activePeriodOverride = localStorage.getItem('imcore_active_period') || null;
+
+// Current logged-in section
+var currentSection = null;
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+var selectedSection = null;
+function selectSection(s){
+  selectedSection = s;
+  document.querySelectorAll('.section-btn').forEach(function(b){b.classList.remove('selected');});
+  document.getElementById('sbtn-'+s).classList.add('selected');
+  document.getElementById('pwInput').focus();
+  document.getElementById('loginErr').style.display='none';
+}
+function doLogin(){
+  if(!selectedSection){showToast('Please select a section first.');return;}
+  var pw = document.getElementById('pwInput').value;
+  if(hashPW(pw) === getPW(selectedSection)){
+    currentSection = selectedSection;
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('portalPage').style.display='block';
+    document.getElementById('logoutBtn').style.display='block';
+    document.getElementById('sectionBadge').textContent =
+      selectedSection==='pull'?'Pull List Editor':
+      selectedSection==='xc'?'XC Editor':
+      selectedSection==='faq'?'FAQ Editor':'Admin';
+    buildNav(); showPane(selectedSection==='admin'?'admin':selectedSection);
+    if(selectedSection==='pull')loadPullSlots();
+    if(selectedSection==='xc')loadXCTable();
+    if(selectedSection==='faq')renderFAQ();
+    if(selectedSection==='admin')initAdmin();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('pwInput').value='';
+  }
+}
+function logout(){
+  currentSection=null;
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('portalPage').style.display='none';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('pwInput').value='';
+  document.getElementById('loginErr').style.display='none';
+  document.querySelectorAll('.section-btn').forEach(function(b){b.classList.remove('selected');});
+  selectedSection=null;
+}
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+var NAV_MAP = {
+  pull:   [{id:'pull',label:'📋 Pull List'},{id:'counts',label:'📊 Counts'}],
+  xc:     [{id:'xc',label:'🏥 XC Assignments'},{id:'counts',label:'📊 Counts'}],
+  faq:    [{id:'faq',label:'❓ FAQ'}],
+  admin:  [{id:'admin',label:'⚙️ Admin'},{id:'counts',label:'📊 Counts'}],
+};
+function buildNav(){
+  var nav=document.getElementById('portalNav'); nav.innerHTML='';
+  (NAV_MAP[currentSection]||[]).forEach(function(item){
+    var b=document.createElement('button');
+    b.className='pnav-btn'; b.textContent=item.label;
+    b.onclick=function(){
+      showPane(item.id);
+      if(item.id==='counts')buildCountsTable();
+      if(item.id==='pull')loadPullSlots();
+      if(item.id==='xc')loadXCTable();
+      if(item.id==='faq')renderFAQ();
+      if(item.id==='admin')initAdmin();
+    };
+    nav.appendChild(b);
+  });
+}
+function showPane(id){
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.pnav-btn').forEach(function(b){b.classList.remove('active');});
+  var pane=document.getElementById('pane-'+id);
+  if(pane)pane.classList.add('active');
+  document.querySelectorAll('.pnav-btn').forEach(function(b){
+    if(b.textContent.indexOf(id.toUpperCase())>=0||b.onclick.toString().indexOf("'"+id+"'")>=0)b.classList.add('active');
+  });
+}
+
+// ═══════════════════════════════════════
+// PULL LIST EDITOR
+// ═══════════════════════════════════════
+var SLOT_LABELS = {"jj": "Jackson Jeopardy (JJ)", "wd": "Weekday Pull (WD)", "gap_wd": "Gap Weekday (GWD)", "mp_wd": "MedPeds WD", "we": "Weekend Pull (WE)", "gap_we": "Gap Weekend (GWE)", "flex_we": "Balanced Coverage (BAL)", "mp_we": "MedPeds WE", "conf_cov": "Conference Coverage"};
+var SLOT_KEYS = ["jj", "wd", "gap_wd", "mp_wd", "we", "gap_we", "flex_we", "mp_we", "conf_cov"];
+
+function loadPullSlots(){
+  var p=document.getElementById('pull-period').value;
+  var wk=document.getElementById('pull-week').value;
+  var container=document.getElementById('pull-slots-container');
+  if(!pullData[p]||!pullData[p][wk]){container.innerHTML='<p style="color:#888">No data for this period.</p>';return;}
+  var html='';
+  SLOT_KEYS.forEach(function(slot){
+    var lbl=SLOT_LABELS[slot];
+    var names=(pullData[p][wk][slot]||[]);
+    var isWE=['we','gap_we','flex_we','mp_we','conf_cov'].indexOf(slot)>=0;
+    var bg=isWE?'#FDEADD':'#E3EFE8';
+    html+='<div class="edit-card" style="border-left:4px solid '+(isWE?'#F47321':'#005030')+'">';
+    html+='<div class="edit-card-title">'+lbl+'</div>';
+    html+='<div class="tag-wrap" id="tags-'+slot+'">';
+    names.forEach(function(n){
+      html+=makeTag(n,slot);
+    });
+    html+='</div>';
+    html+='<div class="ctrl-row" style="margin-top:10px">';
+    html+='<select class="fsel" id="add-sel-'+slot+'"><option value="">— Add resident —</option>';
+    PORTAL_DATA.residents.forEach(function(r){html+='<option value="'+r+'">'+r+'</option>';});
+    html+='</select>';
+    html+='<button class="add-btn" onclick="addToSlot(''+slot+'')">Add</button>';
+    html+='</div></div>';
+  });
+  container.innerHTML=html;
+}
+function makeTag(name,slot){
+  return '<span class="res-tag">'+name+'<button class="rm" onclick="removeFromSlot(''+slot+'',''+name.replace(/'/g,"\'")+'')">×</button></span>';
+}
+function addToSlot(slot){
+  var sel=document.getElementById('add-sel-'+slot);
+  var name=sel.value; if(!name)return;
+  var p=document.getElementById('pull-period').value;
+  var wk=document.getElementById('pull-week').value;
+  if(!pullData[p][wk][slot])pullData[p][wk][slot]=[];
+  if(pullData[p][wk][slot].indexOf(name)<0){
+    pullData[p][wk][slot].push(name);
+    var wrap=document.getElementById('tags-'+slot);
+    wrap.insertAdjacentHTML('beforeend',makeTag(name,slot));
+  }
+  sel.value='';
+}
+function removeFromSlot(slot,name){
+  var p=document.getElementById('pull-period').value;
+  var wk=document.getElementById('pull-week').value;
+  pullData[p][wk][slot]=(pullData[p][wk][slot]||[]).filter(function(n){return n!==name;});
+  loadPullSlots();
+}
+function savePull(){
+  localStorage.setItem('imcore_pull',JSON.stringify(pullData));
+  var msg=document.getElementById('pull-saved-msg');
+  msg.style.display='inline';
+  setTimeout(function(){msg.style.display='none';},3000);
+  showToast('Pull list saved! Download the updated portal to deploy changes.');
+}
+
+// ═══════════════════════════════════════
+// XC EDITOR
+// ═══════════════════════════════════════
+var XC_TEAMS=['JMH T1','JMH T2','JMH T3','UMH T1','UMH T2','UMH T3','VA T1','VA T2','VA T3','VA T4','—'];
+function loadXCTable(){
+  var p=document.getElementById('xc-period').value;
+  document.getElementById('xc-period-label').textContent='Period '+p;
+  var assigned=xcData[p]||{};
+  var html='<table class="xc-edit-table"><thead><tr><th>Resident</th><th>Team Assignment</th><th>PGY</th></tr></thead><tbody>';
+  var assignedNames=Object.keys(assigned);
+  // Show assigned first, then allow adding
+  assignedNames.forEach(function(name){
+    var team=assigned[name];
+    var g=PORTAL_DATA.grp_map[name]||'P3';
+    var gpill=g==='P2'?'<span style="background:#FCE4EC;color:#9a2a4a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600">PGY-2</span>':
+              g==='P3'?'<span style="background:#E3F0FB;color:#1a4a7a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600">PGY-3</span>':
+              '<span style="background:#E8F5E9;color:#1a5a2a;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600">MP</span>';
+    html+='<tr><td style="font-weight:500">'+name+'</td><td><select class="xc-sel" id="xc-sel-'+name.replace(/\s/g,'_')+'" onchange="updateXC(''+p+'',''+name.replace(/'/g,"\'")+'',this.value)">';
+    XC_TEAMS.forEach(function(t){html+='<option value="'+t+'"'+(t===team?' selected':'')+'>'+t+'</option>';});
+    html+='</select></td><td>'+gpill+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  // Add new resident to XC
+  html+='<div class="ctrl-row" style="margin-top:14px"><select class="fsel" id="xc-add-sel"><option value="">— Add resident to XC —</option>';
+  PORTAL_DATA.residents.forEach(function(r){if(!assigned[r])html+='<option value="'+r+'">'+r+'</option>';});
+  html+='</select><select class="fsel" id="xc-add-team">';
+  XC_TEAMS.slice(0,-1).forEach(function(t){html+='<option>'+t+'</option>';});
+  html+='</select><button class="add-btn" onclick="addXC(''+p+'')">Add</button></div>';
+  document.getElementById('xc-table-container').innerHTML=html;
+}
+function updateXC(p,name,team){
+  if(team==='—'){delete xcData[p][name];}
+  else{if(!xcData[p])xcData[p]={};xcData[p][name]=team;}
+}
+function addXC(p){
+  var name=document.getElementById('xc-add-sel').value;
+  var team=document.getElementById('xc-add-team').value;
+  if(!name)return;
+  if(!xcData[p])xcData[p]={};
+  xcData[p][name]=team;
+  loadXCTable();
+}
+function saveXC(){
+  localStorage.setItem('imcore_xc',JSON.stringify(xcData));
+  var msg=document.getElementById('xc-saved-msg');
+  msg.style.display='inline'; setTimeout(function(){msg.style.display='none';},3000);
+  showToast('XC assignments saved!');
+}
+
+// ═══════════════════════════════════════
+// FAQ EDITOR
+// ═══════════════════════════════════════
+function renderFAQ(){
+  var container=document.getElementById('faq-items'); container.innerHTML='';
+  faqData.forEach(function(item,i){
+    var div=document.createElement('div'); div.className='faq-item-edit';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:600;color:#888">Question '+(i+1)+'</span><button class="del-btn" onclick="deleteFAQ('+i+')">Delete</button></div>'+
+      '<input class="faq-q-input" value="'+escapeHtml(item.q)+'" oninput="faqData['+i+'].q=this.value" placeholder="Question...">'+
+      '<textarea class="faq-a-input" oninput="faqData['+i+'].a=this.value" placeholder="Answer...">'+escapeHtml(item.a)+'</textarea>';
+    container.appendChild(div);
+  });
+}
+function addFAQ(){
+  faqData.push({q:'',a:''});
+  renderFAQ();
+  document.getElementById('faq-items').lastChild.querySelector('input').focus();
+}
+function deleteFAQ(i){
+  if(confirm('Delete this question?')){faqData.splice(i,1);renderFAQ();}
+}
+function saveFAQ(){
+  localStorage.setItem('imcore_faq',JSON.stringify(faqData));
+  var msg=document.getElementById('faq-saved-msg');
+  msg.style.display='inline'; setTimeout(function(){msg.style.display='none';},3000);
+  showToast('FAQ saved!');
+}
+
+// ═══════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════
+function initAdmin(){
+  var cur=activePeriodOverride||getCurrentPeriodAuto();
+  document.getElementById('admin-cur-period').textContent=cur;
+  var dates=PORTAL_DATA.period_dates[cur];
+  document.getElementById('admin-cur-dates').textContent=dates?dates.display:'';
+  document.getElementById('admin-period-sel').value=cur;
+}
+function getCurrentPeriodAuto(){
+  var today=new Date();
+  var periods=PORTAL_DATA.periods;
+  var dates=PORTAL_DATA.period_dates;
+  for(var i=0;i<periods.length;i++){
+    var p=periods[i];
+    if(dates[p]){
+      var start=new Date(dates[p].start);
+      var end=new Date(dates[p].end);
+      if(today>=start&&today<=end)return p;
+    }
+  }
+  return periods[0];
+}
+function setActivePeriod(){
+  var p=document.getElementById('admin-period-sel').value;
+  activePeriodOverride=p;
+  localStorage.setItem('imcore_active_period',p);
+  initAdmin();
+  showToast('Active period set to '+p);
+}
+
+// ═══════════════════════════════════════
+// CHANGE PASSWORD
+// ═══════════════════════════════════════
+function changePassword(section){
+  var cur=document.getElementById('pw-'+section+'-cur').value;
+  var nw=document.getElementById('pw-'+section+'-new').value;
+  var confirm=document.getElementById('pw-'+section+'-confirm').value;
+  var msgEl=document.getElementById('pw-'+section+'-msg');
+  msgEl.style.display='inline';
+  if(hashPW(cur)!==getPW(section)){
+    msgEl.textContent='❌ Current password incorrect';msgEl.style.color='#c0392b';return;
+  }
+  if(!nw||nw.length<4){
+    msgEl.textContent='❌ New password too short (min 4 chars)';msgEl.style.color='#c0392b';return;
+  }
+  if(nw!==confirm){
+    msgEl.textContent='❌ Passwords do not match';msgEl.style.color='#c0392b';return;
+  }
+  setPW(section,nw);
+  msgEl.textContent='✅ Password updated!';msgEl.style.color='green';
+  document.getElementById('pw-'+section+'-cur').value='';
+  document.getElementById('pw-'+section+'-new').value='';
+  document.getElementById('pw-'+section+'-confirm').value='';
+  setTimeout(function(){msgEl.style.display='none';},3000);
+}
+
+// ═══════════════════════════════════════
+// COUNTS TABLE
+// ═══════════════════════════════════════
+function buildCountsTable(){
+  var table=document.getElementById('counts-table');
+  var html='<thead><tr><th style="text-align:left">Resident</th><th>PGY</th><th>WD Pull</th><th>WE Pull</th><th>Gap</th><th>BAL</th><th>Conf</th><th>XC</th><th>TOTAL</th></tr></thead><tbody>';
+  var periods=PORTAL_DATA.periods;
+  var grpMap=PORTAL_DATA.grp_map;
+  var mpMap=PORTAL_DATA.mp_year_map;
+  var WD=['wd','gap_wd','mp_wd'];
+  var WE=['we','mp_we'];
+  var GAP=['gap_we','gap_wd'];
+  var BAL=['flex_we','bal','bal_cov'];
+  var CONF=['conf_cov'];
+  // Count XC
+  var xcCount={};
+  periods.forEach(function(p){
+    Object.keys(xcData[p]||{}).forEach(function(n){xcCount[n]=(xcCount[n]||0)+2;});
+  });
+  // Group residents
+  var groups=[['P2','PGY-2'],['P3','PGY-3'],['MP2','MedPeds-2'],['MP3','MedPeds-3'],['MP4','MedPeds-4']];
+  function getGrp(n){var g=grpMap[n];var m=mpMap[n];if(g==='MP')return m||'MP2';return g;}
+  function sortAlpha(a,b){var la=a.split(' ').pop(),lb=b.split(' ').pop();return la<lb?-1:1;}
+  groups.forEach(function(gp){
+    var gkey=gp[0],glabel=gp[1];
+    var members=PORTAL_DATA.residents.filter(function(n){return getGrp(n)===gkey;}).sort(sortAlpha);
+    if(!members.length)return;
+    html+='<tr><td class="grp-banner" colspan="9">'+glabel+'</td></tr>';
+    members.forEach(function(name){
+      var wd=0,we=0,gap=0,bal=0,conf=0;
+      periods.forEach(function(p){
+        ['1','2'].forEach(function(wk){
+          var w=(pullData[p]&&pullData[p][wk])||{};
+          WD.forEach(function(s){if((w[s]||[]).indexOf(name)>=0)wd+=2;});
+          WE.forEach(function(s){if((w[s]||[]).indexOf(name)>=0)we+=2;});
+          ['gap_we'].forEach(function(s){if((w[s]||[]).indexOf(name)>=0)gap+=2;});
+          ['gap_wd'].forEach(function(s){if((w[s]||[]).indexOf(name)>=0)gap+=2;});
+          BAL.forEach(function(s){if((w[s]||[]).indexOf(name)>=0)bal+=2;});
+          CONF.forEach(function(s){if((w[s]||[]).indexOf(name)>=0)conf+=2;});
+        });
+      });
+      var xc=xcCount[name]||0;
+      var total=wd+we+gap+bal+conf+xc;
+      html+='<tr><td class="name-cell">'+name+'</td><td>'+glabel.replace('MedPeds-','MP-')+'</td>'+
+        '<td>'+wd+'</td><td>'+we+'</td><td>'+gap+'</td><td>'+bal+'</td><td>'+conf+'</td><td>'+xc+'</td>'+
+        '<td class="cnt-total">'+total+'</td></tr>';
+    });
+  });
+  html+='</tbody>';
+  table.innerHTML=html;
+}
+
+// ═══════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════
+function showToast(msg){
+  var t=document.getElementById('fToast');
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(function(){t.style.opacity='0';},3000);
+}
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Load saved data from localStorage on startup
+(function(){
+  var savedPull=localStorage.getItem('imcore_pull');
+  if(savedPull){try{pullData=JSON.parse(savedPull);}catch(e){}}
+  var savedXC=localStorage.getItem('imcore_xc');
+  if(savedXC){try{xcData=JSON.parse(savedXC);}catch(e){}}
+  var savedFAQ=localStorage.getItem('imcore_faq');
+  if(savedFAQ){try{faqData=JSON.parse(savedFAQ);}catch(e){}}
+})();
+</script>
+</body>
+</html>
